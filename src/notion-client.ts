@@ -16,6 +16,12 @@ const notionApi = new Client({
 const fetchPagesByDatabase = async (database_id: string) => {
   const response = await notionApi.databases.query({
     database_id,
+    sorts: [
+      {
+        property: "Date",
+        direction: "ascending",
+      },
+    ],
     filter: {
       and: [
         {
