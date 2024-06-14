@@ -5,81 +5,68 @@ import {
 
 import { match, P } from "ts-pattern";
 
-const retrievePlainTextByRichText = (richText: RichTextItemResponse[]) => {
-  return richText.map((text) => text.plain_text).join(" ");
+const parseRichText = (
+  richTexts: RichTextItemResponse[],
+  option: { prefix?: string; separator?: string } = { separator: " " }
+) => {
+  if (option.prefix) {
+    return `${option.prefix} ${richTexts
+      .map((text) => text.plain_text)
+      .join(option.separator)}`;
+  }
+  return richTexts.map((text) => text.plain_text).join(option.separator);
 };
 
 export const retrievePlainTextByBlock = (block: BlockObjectResponse) => {
   return match(block)
     .with(
       { type: "paragraph", paragraph: { rich_text: P.select() } },
-      retrievePlainTextByRichText
+      (richText) => parseRichText(richText)
     )
     .with(
       { type: "heading_1", heading_1: { rich_text: P.select() } },
-      retrievePlainTextByRichText
+      (richText) => parseRichText(richText, { prefix: "#" })
     )
     .with(
       { type: "heading_2", heading_2: { rich_text: P.select() } },
-      retrievePlainTextByRichText
+      (richText) => parseRichText(richText, { prefix: "##" })
     )
     .with(
       { type: "heading_3", heading_3: { rich_text: P.select() } },
-      retrievePlainTextByRichText
+      (richText) => parseRichText(richText, { prefix: "###" })
     )
     .with(
       {
         type: "bulleted_list_item",
         bulleted_list_item: { rich_text: P.select() },
       },
-      retrievePlainTextByRichText
+      (richText) => parseRichText(richText, { prefix: "-" })
     )
     .with(
       {
         type: "numbered_list_item",
         numbered_list_item: { rich_text: P.select() },
       },
-      retrievePlainTextByRichText
+      (richText) => parseRichText(richText, { prefix: `1.` })
     )
-    .with(
-      { type: "quote", quote: { rich_text: P.select() } },
-      retrievePlainTextByRichText
+    .with({ type: "quote", quote: { rich_text: P.select() } }, (richText) =>
+      parseRichText(richText, { prefix: ">" })
     )
-    .with(
-      { type: "to_do", to_do: { rich_text: P.select() } },
-      retrievePlainTextByRichText
+    .with({ type: "to_do", to_do: { rich_text: P.select() } }, (richText) =>
+      parseRichText(richText, { prefix: "-" })
     )
-    .with(
-      { type: "toggle", toggle: { rich_text: P.select() } },
-      retrievePlainTextByRichText
+    .with({ type: "toggle", toggle: { rich_text: P.select() } }, (richText) =>
+      parseRichText(richText, { prefix: ">" })
     )
-
     .with(
       { type: "template", template: { rich_text: P.select() } },
-      retrievePlainTextByRichText
+      (richText) => parseRichText(richText, { prefix: ">" })
     )
-    .with(
-      { type: "code", code: { rich_text: P.select() } },
-      retrievePlainTextByRichText
-    )
-    .with(
-      { type: "callout", callout: { rich_text: P.select() } },
-      retrievePlainTextByRichText
+    .with({ type: "callout", callout: { rich_text: P.select() } }, (richText) =>
+      parseRichText(richText, { prefix: ">" })
     )
     .with({ type: "table_row", table_row: { cells: P.select() } }, (cell) =>
-      cell.map(retrievePlainTextByRichText).join("|")
-    )
-    .with({ type: "embed", embed: { url: P.select() } }, (url) => url)
-    .with(
-      { type: "bookmark", bookmark: P.select() },
-      ({ url, caption }) => `${caption} : ${url}`
-    )
-    .with(
-      {
-        type: "link_preview",
-        link_preview: P.select(),
-      },
-      ({ url }) => url
+      cell.map((richText) => parseRichText(richText, { separator: "|" }))
     )
     .with(
       { type: "synced_block" },
@@ -98,6 +85,10 @@ export const retrievePlainTextByBlock = (block: BlockObjectResponse) => {
       { type: "audio" },
       { type: "breadcrumb" },
       { type: "divider" },
+      { type: "embed" },
+      { type: "bookmark" },
+      { type: "code" },
+      { type: "link_preview" },
       { type: "unsupported" },
       () => ""
     )
