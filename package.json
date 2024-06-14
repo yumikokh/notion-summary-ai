@@ -12,7 +12,8 @@
   "license": "ISC",
   "dependencies": {
     "@notionhq/client": "^2.2.15",
-    "openai": "^4.50.0"
+    "openai": "^4.50.0",
+    "ts-pattern": "^5.2.0"
   },
   "devDependencies": {
     "@types/node": "^20.14.2",
