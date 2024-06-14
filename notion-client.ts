@@ -1,10 +1,12 @@
 import { Client } from "@notionhq/client";
+import { BlockObjectResponse } from "@notionhq/client/build/src/api-endpoints";
+import { retrievePlainTextByBlock } from "./helpers";
 
 const notionApi = new Client({
   auth: process.env["NOTION_API_TOKEN"],
 });
 
-const fetchPagesFromDatabase = async (database_id: string) => {
+const fetchPagesByDatabase = async (database_id: string) => {
   const response = await notionApi.databases.query({
     database_id,
     filter: {
@@ -18,28 +20,30 @@ const fetchPagesFromDatabase = async (database_id: string) => {
         {
           property: "Date",
           date: {
-            before: "2024-05-02",
+            before: "2024-05-05",
           },
         },
       ],
     },
   });
-  console.log(response.results);
+  // console.log(response.results);
   return response.results;
 };
 
-const fetchBlocksFromPage = async (pageId: string) => {
+const fetchBlocksByPage = async (pageId: string) => {
   const response = await notionApi.blocks.children.list({ block_id: pageId });
   return response.results;
 };
 
-export const main = async () => {
-  const pages = await fetchPagesFromDatabase(process.env["NOTION_DB_ID"] ?? "");
+const main = async () => {
+  const pages = await fetchPagesByDatabase(process.env["NOTION_DB_ID"] ?? "");
   const pageIds = pages.map((page) => page.id);
   const texts = await Promise.all(
     pageIds.map(async (pageId) => {
-      const blocks = await fetchBlocksFromPage(pageId);
-      return blocks;
+      const blocks = await fetchBlocksByPage(pageId);
+      return blocks.map((block) =>
+        retrievePlainTextByBlock(block as BlockObjectResponse)
+      );
     })
   );
   console.log(texts);
