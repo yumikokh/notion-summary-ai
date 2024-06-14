@@ -5,7 +5,7 @@ import {
 
 import { match, P } from "ts-pattern";
 
-const parseRichText = (
+export const parseRichText = (
   richTexts: RichTextItemResponse[],
   option: { prefix?: string; separator?: string } = { separator: " " }
 ) => {
