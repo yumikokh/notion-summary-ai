@@ -1,5 +1,12 @@
 import { Client } from "@notionhq/client";
-import { BlockObjectResponse } from "@notionhq/client/build/src/api-endpoints";
+import {
+  BlockObjectResponse,
+  CheckboxPropertyItemObjectResponse,
+  DatePropertyItemObjectResponse,
+  PageObjectResponse,
+  RichTextPropertyItemObjectResponse,
+  SelectPropertyItemObjectResponse,
+} from "@notionhq/client/build/src/api-endpoints";
 import { retrievePlainTextByBlock } from "./helpers";
 
 const notionApi = new Client({
@@ -20,7 +27,7 @@ const fetchPagesByDatabase = async (database_id: string) => {
         {
           property: "Date",
           date: {
-            before: "2024-05-05",
+            before: "2024-05-31",
           },
         },
       ],
@@ -35,18 +42,42 @@ const fetchBlocksByPage = async (pageId: string) => {
   return response.results;
 };
 
-const main = async () => {
-  const pages = await fetchPagesByDatabase(process.env["NOTION_DB_ID"] ?? "");
-  const pageIds = pages.map((page) => page.id);
-  const texts = await Promise.all(
-    pageIds.map(async (pageId) => {
-      const blocks = await fetchBlocksByPage(pageId);
-      return blocks.map((block) =>
-        retrievePlainTextByBlock(block as BlockObjectResponse)
-      );
-    })
-  );
-  console.log(texts);
+type JournalProperties = {
+  Date: DatePropertyItemObjectResponse;
+  Feeling: SelectPropertyItemObjectResponse;
+  English: CheckboxPropertyItemObjectResponse;
+  Exercise: CheckboxPropertyItemObjectResponse;
+  Notes: RichTextPropertyItemObjectResponse;
 };
 
-main();
+export const fetchPagesText = async () => {
+  const pages = await fetchPagesByDatabase(process.env["NOTION_DB_ID"] ?? "");
+  const texts = await Promise.all(
+    pages.map(async (_page) => {
+      const page = _page as PageObjectResponse;
+      const properties = page.properties as unknown as JournalProperties;
+      const date = properties.Date.date?.start || "";
+      const feeling = properties.Feeling.select?.name || "";
+      const english = properties.English.checkbox || false;
+      const exercise = properties.Exercise.checkbox || false;
+      const notes = properties.Notes.rich_text.plain_text;
+      const blocks = await fetchBlocksByPage(page.id);
+      const contents = blocks
+        .map((block) => retrievePlainTextByBlock(block as BlockObjectResponse))
+        .join("\n");
+      return `
+日付: ${date}
+気分: ${feeling}
+英語した: ${english ? "Yes" : "No"}
+運動した: ${exercise ? "Yes" : "No"}
+ノート: ${notes}
+本文:
+${contents}
+-------------------------`;
+    })
+  );
+  console.log(texts.join("\n"));
+  return texts.join("\n");
+};
+
+// fetchPagesText();
