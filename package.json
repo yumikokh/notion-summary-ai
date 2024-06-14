@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "node -r ts-node/register --env-file=.env main.ts",
+    "notion": "node -r ts-node/register --env-file=.env notion-client.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
