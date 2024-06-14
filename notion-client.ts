@@ -4,10 +4,10 @@ import {
   CheckboxPropertyItemObjectResponse,
   DatePropertyItemObjectResponse,
   PageObjectResponse,
-  RichTextPropertyItemObjectResponse,
+  RichTextItemResponse,
   SelectPropertyItemObjectResponse,
 } from "@notionhq/client/build/src/api-endpoints";
-import { retrievePlainTextByBlock } from "./helpers";
+import { parseRichText, retrievePlainTextByBlock } from "./helpers";
 
 const notionApi = new Client({
   auth: process.env["NOTION_API_TOKEN"],
@@ -47,7 +47,11 @@ type JournalProperties = {
   Feeling: SelectPropertyItemObjectResponse;
   English: CheckboxPropertyItemObjectResponse;
   Exercise: CheckboxPropertyItemObjectResponse;
-  Notes: RichTextPropertyItemObjectResponse;
+  Notes: {
+    id: string;
+    type: "rich_text";
+    rich_text: RichTextItemResponse[];
+  }; // 実際のデータと型が異なるので自前で定義
 };
 
 export const fetchPagesText = async () => {
@@ -60,7 +64,7 @@ export const fetchPagesText = async () => {
       const feeling = properties.Feeling.select?.name || "";
       const english = properties.English.checkbox || false;
       const exercise = properties.Exercise.checkbox || false;
-      const notes = properties.Notes.rich_text.plain_text;
+      const notes = parseRichText(properties.Notes.rich_text);
       const blocks = await fetchBlocksByPage(page.id);
       const contents = blocks
         .map((block) => retrievePlainTextByBlock(block as BlockObjectResponse))
@@ -79,5 +83,4 @@ ${contents}
   console.log(texts.join("\n"));
   return texts.join("\n");
 };
-
 // fetchPagesText();
