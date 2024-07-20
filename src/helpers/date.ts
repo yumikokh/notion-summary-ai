@@ -1,3 +1,8 @@
+export const startMonth = (date: Date) => {
+  const newDate = new Date(date);
+  return new Date(newDate.getFullYear(), newDate.getMonth(), 1);
+};
+
 export const endMonth = (date: Date) => {
   const newDate = new Date(date);
   return new Date(newDate.getFullYear(), newDate.getMonth() + 1, 0);

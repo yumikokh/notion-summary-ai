@@ -7,13 +7,21 @@ import {
   RichTextItemResponse,
   SelectPropertyItemObjectResponse,
 } from "@notionhq/client/build/src/api-endpoints";
-import { parseRichText, retrievePlainTextByBlock } from "./helpers";
+import { parseRichText, retrievePlainTextByBlock } from "./helpers/notion";
+import { endMonth, formatDate, startMonth } from "./helpers/date";
 
 const notionApi = new Client({
   auth: process.env["NOTION_API_TOKEN"],
 });
 
-const fetchPagesByDatabase = async (database_id: string) => {
+const fetchPagesByDatabase = async (
+  database_id: string,
+  from: Date,
+  to: Date
+) => {
+  const fromStr = formatDate(from);
+  const toStr = formatDate(to);
+
   const response = await notionApi.databases.query({
     database_id,
     sorts: [
@@ -27,13 +35,13 @@ const fetchPagesByDatabase = async (database_id: string) => {
         {
           property: "Date",
           date: {
-            on_or_after: "2024-05-01",
+            on_or_after: fromStr,
           },
         },
         {
           property: "Date",
           date: {
-            before: "2024-05-31",
+            before: toStr,
           },
         },
       ],
@@ -60,8 +68,15 @@ type JournalProperties = {
   }; // 実際のデータと型が異なるので自前で定義
 };
 
-export const fetchPagesText = async () => {
-  const pages = await fetchPagesByDatabase(process.env["NOTION_DB_ID"] ?? "");
+export const fetchPagesText = async (
+  from: Date = startMonth(new Date()),
+  to?: Date
+) => {
+  const pages = await fetchPagesByDatabase(
+    process.env["NOTION_DB_ID"] ?? "",
+    from,
+    to ? to : endMonth(from)
+  );
   const texts = await Promise.all(
     pages.map(async (_page) => {
       const page = _page as PageObjectResponse;
@@ -89,4 +104,3 @@ ${contents}
   console.log(texts.join("\n"));
   return texts.join("\n");
 };
-// fetchPagesText();
