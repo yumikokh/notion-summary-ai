@@ -8,7 +8,7 @@ import {
   SelectPropertyItemObjectResponse,
 } from "@notionhq/client/build/src/api-endpoints";
 import { parseRichText, retrievePlainTextByBlock } from "./helpers/notion";
-import { endMonth, formatDate, startMonth } from "./helpers/date";
+import { formatDate } from "./helpers/date";
 
 const notionApi = new Client({
   auth: process.env["NOTION_API_TOKEN"],
@@ -83,19 +83,16 @@ type JournalProperties = {
  * @param from 開始日
  * @param to 終了日
  */
-const fetchPagesText = async (
-  from: Date = startMonth(new Date()),
-  to?: Date
-) => {
+const fetchPagesText = async (from: Date, to: Date) => {
   const pages = await fetchPagesByDatabase(
     process.env["NOTION_DB_ID"] ?? "",
     from,
-    to ? to : endMonth(from)
+    to
   );
   const texts = await Promise.all(
     pages.map(async (_page) => {
       const page = _page as PageObjectResponse;
-      const properties = page.properties as unknown as JournalProperties;
+      const properties = page.properties as JournalProperties;
       const date = properties.Date.date?.start || "";
       const feeling = properties.Feeling.select?.name || "";
       const english = properties.English.checkbox || false;
@@ -105,6 +102,7 @@ const fetchPagesText = async (
       const contents = blocks
         .map((block) => retrievePlainTextByBlock(block as BlockObjectResponse))
         .join("\n");
+
       return `
 日付: ${date}
 気分: ${feeling}
