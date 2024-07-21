@@ -14,6 +14,12 @@ const notionApi = new Client({
   auth: process.env["NOTION_API_TOKEN"],
 });
 
+/**
+ * 指定したデータベースから指定した期間のページを取得する
+ * @param database_id データベースID
+ * @param from 開始日
+ * @param to 終了日
+ */
 const fetchPagesByDatabase = async (
   database_id: string,
   from: Date,
@@ -51,6 +57,10 @@ const fetchPagesByDatabase = async (
   return response.results;
 };
 
+/**
+ * 指定したページの子ブロックを取得する
+ * @param pageId ページID
+ */
 const fetchBlocksByPage = async (pageId: string) => {
   const response = await notionApi.blocks.children.list({ block_id: pageId });
   return response.results;
@@ -68,7 +78,12 @@ type JournalProperties = {
   }; // 実際のデータと型が異なるので自前で定義
 };
 
-export const fetchPagesText = async (
+/**
+ * 指定した期間のページのテキストを取得する
+ * @param from 開始日
+ * @param to 終了日
+ */
+const fetchPagesText = async (
   from: Date = startMonth(new Date()),
   to?: Date
 ) => {
@@ -101,6 +116,8 @@ ${contents}
 -------------------------`;
     })
   );
-  console.log(texts.join("\n"));
+  // console.log(texts.join("\n"));
   return texts.join("\n");
 };
+
+export { fetchPagesText };
