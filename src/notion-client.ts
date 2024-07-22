@@ -60,15 +60,12 @@ const fetchBlocksByPage = async (pageId: string) => {
 
 /**
  * 指定した期間のページのテキストを取得する
+ * @param databaseId データベースID
  * @param from 開始日
  * @param to 終了日
  */
-const fetchPagesContents = async (from: Date, to: Date) => {
-  const pages = await fetchPagesByDatabase(
-    process.env["NOTION_DB_ID"] ?? "",
-    from,
-    to
-  );
+const fetchPagesContents = async (databaseId: string, from: Date, to: Date) => {
+  const pages = await fetchPagesByDatabase(databaseId, from, to);
 
   const texts = await Promise.all(
     pages.flatMap(async (page) => {

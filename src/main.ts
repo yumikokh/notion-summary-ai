@@ -9,6 +9,7 @@ const openai = new OpenAPI({
 
 const program = new Command();
 program
+  .requiredOption("-d, --database <databaseId>", "データベースID")
   .option("-f, --from <fromDate>", "開始日 (例: 2024-07-01), 省略時は今月1日")
   .option(
     "-t, --to <toDate>",
@@ -16,19 +17,25 @@ program
   )
   .option("-p, --prompt <prompt>", "プロンプト文")
   .option(
-    "-d, --dry-run",
+    "--dry-run",
     "実行せずにプロンプトとNotionから取得したコンテンツを表示する"
   );
 
 program.parse(process.argv);
 
-const { from: fromDate, to: toDate, prompt, dryRun } = program.opts();
+const {
+  database: databaseId,
+  from: fromDate,
+  to: toDate,
+  prompt,
+  dryRun,
+} = program.opts();
 
 const main = async () => {
   const promptText = prompt || "要約してください。";
   const from = fromDate ? new Date(fromDate) : startMonth(new Date());
   const to = toDate ? new Date(toDate) : endMonth(from);
-  const notionContents = await fetchPagesContents(from, to);
+  const notionContents = await fetchPagesContents(databaseId, from, to);
 
   const content = `
   プロンプト: ${promptText}
