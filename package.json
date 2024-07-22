@@ -4,18 +4,20 @@
   "description": "",
   "main": "dist/index.js",
   "scripts": {
-    "dev": "node -r ts-node/register --env-file=.env src/index.ts",
+    "dev": "node -r ts-node/register --env-file=.env",
     "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "bin": {
-    "notion-summary": "bin/notion-summary"
+    "notion-summary": "bin/notion-summary",
+    "setup": "bin/setup"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@notionhq/client": "^2.2.15",
     "commander": "^12.1.0",
+    "dotenv": "^16.4.5",
     "openai": "^4.50.0",
     "ts-pattern": "^5.2.0"
   },
