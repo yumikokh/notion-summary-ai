@@ -2,10 +2,13 @@ import OpenAPI from "openai";
 import { fetchPagesContents } from "./notion-client";
 import { Command } from "commander";
 import { endMonth, startMonth } from "./helpers/date";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const program = new Command();
 program
-  .requiredOption("-d, --database <databaseId>", "データベースID")
+  .option("-d, --database <databaseId>", "データベースID")
   .option("-f, --from <fromDate>", "開始日 (例: 2024-07-01), 省略時は今月1日")
   .option(
     "-t, --to <toDate>",
@@ -18,23 +21,25 @@ program
   )
   .parse(process.argv);
 
-const {
-  database: databaseId,
-  from: fromDate,
-  to: toDate,
-  prompt,
-  dryRun,
-} = program.opts();
+const opts = program.opts();
 
-if (!process.env["OPENAI_API_KEY"] && !dryRun) {
+if (!process.env["OPENAI_API_KEY"] && !opts.dryRun) {
   console.error("OPENAI_API_KEY is not set");
   process.exit(1);
 }
 
+if (!process.env["NOTION_DATABASE_ID"] && !opts.database) {
+  console.error(
+    "NOTION_DATABASE_ID is not set. Please specify with -d option or NOTION_DATABASE_ID environment variable."
+  );
+  process.exit(1);
+}
+
 const main = async () => {
-  const promptText = prompt || "要約してください。";
-  const from = fromDate ? new Date(fromDate) : startMonth(new Date());
-  const to = toDate ? new Date(toDate) : endMonth(from);
+  const promptText = opts.prompt || "要約してください。";
+  const databaseId = opts.database || process.env["NOTION_DATABASE_ID"];
+  const from = opts.from ? new Date(opts.from) : startMonth(new Date());
+  const to = opts.to ? new Date(opts.to) : endMonth(from);
   const notionContents = await fetchPagesContents(databaseId, from, to);
 
   const content = `
@@ -43,7 +48,7 @@ const main = async () => {
   
   ${notionContents}`;
 
-  if (dryRun) {
+  if (opts.dryRun) {
     console.log(content);
     return;
   }

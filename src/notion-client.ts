@@ -1,6 +1,9 @@
 import { Client } from "@notionhq/client";
 import { parseBlock, parseProperties } from "./helpers/notion";
 import { formatDate } from "./helpers/date";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 if (!process.env["NOTION_API_TOKEN"]) {
   console.error("NOTION_API_TOKEN is not set");
