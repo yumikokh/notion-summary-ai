@@ -1,11 +1,15 @@
 {
-  "name": "notion-summray-ai",
+  "name": "notion-summary-ai",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
-    "notion-summary": "node -r ts-node/register --env-file=.env src/main.ts",
+    "dev": "node -r ts-node/register --env-file=.env src/index.ts",
+    "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "bin": {
+    "notion-summary": "bin/notion-summary"
   },
   "author": "",
   "license": "ISC",
@@ -17,7 +21,8 @@
   },
   "devDependencies": {
     "@types/node": "^20.14.11",
-    "ts-node": "^10.9.2"
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.3"
   },
   "packageManager": "pnpm@8.15.8+sha256.691fe176eea9a8a80df20e4976f3dfb44a04841ceb885638fe2a26174f81e65e"
 }
