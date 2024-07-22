@@ -2,6 +2,11 @@ import { Client } from "@notionhq/client";
 import { parseBlock, parseProperties } from "./helpers/notion";
 import { formatDate } from "./helpers/date";
 
+if (!process.env["NOTION_API_TOKEN"]) {
+  console.error("NOTION_API_TOKEN is not set");
+  process.exit(1);
+}
+
 const notionApi = new Client({
   auth: process.env["NOTION_API_TOKEN"],
 });

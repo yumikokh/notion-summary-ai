@@ -3,10 +3,6 @@ import { fetchPagesContents } from "./notion-client";
 import { Command } from "commander";
 import { endMonth, startMonth } from "./helpers/date";
 
-const openai = new OpenAPI({
-  apiKey: process.env["OPENAI_API_KEY"],
-});
-
 const program = new Command();
 program
   .requiredOption("-d, --database <databaseId>", "データベースID")
@@ -18,7 +14,7 @@ program
   .option("-p, --prompt <prompt>", "プロンプト文")
   .option(
     "--dry-run",
-    "実行せずにプロンプトとNotionから取得したコンテンツを表示する"
+    "OPENAI APIを実行せずにプロンプトとNotionから取得したコンテンツを表示する"
   );
 
 program.parse(process.argv);
@@ -30,6 +26,14 @@ const {
   prompt,
   dryRun,
 } = program.opts();
+
+if (!process.env["OPENAI_API_KEY"] && !dryRun) {
+  console.error("OPENAI_API_KEY is not set");
+  process.exit(1);
+}
+const openai = new OpenAPI({
+  apiKey: process.env["OPENAI_API_KEY"],
+});
 
 const main = async () => {
   const promptText = prompt || "要約してください。";
