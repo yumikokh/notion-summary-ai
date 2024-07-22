@@ -33,20 +33,50 @@ ${envData}`);
   process.exit(0);
 }
 
+// .envファイルから現在の設定を読み込む
+const currentEnv = dotenv.parse(fs.readFileSync(envFilePath, "utf8"));
+const newEnv = { ...currentEnv };
+
 const askQuestions = (questions: string[]) => {
   let index = 0;
 
   const askNextQuestion = () => {
     // 中断したらもとに戻す
     if (index < questions.length) {
-      rl.question(questions[index], (answer) => {
-        const envKey = questions[index].split(" ")[2].slice(0, -1);
-        fs.appendFileSync(envFilePath, `${envKey}=${answer}\n`);
-        index++;
-        askNextQuestion();
-      });
+      const envKey = ENV_KEYS[index];
+      const currentEnvValue = currentEnv[envKey];
+      // 値があったら上書きするか聞く
+      if (currentEnvValue) {
+        rl.question(
+          `The current value of ${envKey} is "${currentEnvValue}". Do you want to overwrite it? (y/n): `,
+          (answer) => {
+            if (answer === "n") {
+              newEnv[envKey] = currentEnvValue;
+            } else {
+              rl.question(questions[index], (newValue) => {
+                newEnv[envKey] = newValue;
+              });
+            }
+            index++;
+            askNextQuestion();
+          }
+        );
+      } else {
+        rl.question(questions[index], (answer) => {
+          newEnv[envKey] = answer;
+          index++;
+          askNextQuestion();
+        });
+      }
     } else {
       rl.close();
+
+      // .envファイルに書き込む
+      const envContent = Object.entries(newEnv)
+        .map(([key, value]) => `${key}=${value}`)
+        .join("\n");
+      fs.writeFileSync(envFilePath, envContent);
+
       console.log("Environment variables have been set up.");
       // バックアップファイルを削除
       if (fs.existsSync(backupFilePath)) {
@@ -66,22 +96,8 @@ if (fs.existsSync(envFilePath)) {
 if (!fs.existsSync(envFilePath)) {
   // .envを作成
   fs.writeFileSync(envFilePath, "");
-  askQuestions(questions);
-} else {
-  // 上書きするかを聞く
-  rl.question(
-    ".env file already exists. Do you want to overwrite it? (y/n): ",
-    (answer) => {
-      if (answer === "n") {
-        rl.close();
-        return;
-      }
-      // .envを作成
-      fs.writeFileSync(envFilePath, "");
-      askQuestions(questions);
-    }
-  );
 }
+askQuestions(questions);
 
 rl.on("SIGINT", () => {
   console.log("\nProcess interrupted. Restoring the original .env file.");
