@@ -30,9 +30,6 @@ if (!process.env["OPENAI_API_KEY"] && !dryRun) {
   console.error("OPENAI_API_KEY is not set");
   process.exit(1);
 }
-const openai = new OpenAPI({
-  apiKey: process.env["OPENAI_API_KEY"],
-});
 
 const main = async () => {
   const promptText = prompt || "要約してください。";
@@ -50,6 +47,10 @@ const main = async () => {
     console.log(content);
     return;
   }
+
+  const openai = new OpenAPI({
+    apiKey: process.env["OPENAI_API_KEY"],
+  });
 
   const stream = await openai.chat.completions.create({
     model: "gpt-4",
