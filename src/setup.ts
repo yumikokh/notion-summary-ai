@@ -14,8 +14,8 @@ const rl = readline.createInterface({
 const ENV_KEYS = ["OPENAI_API_KEY", "NOTION_API_TOKEN", "NOTION_DATABASE_ID"];
 const questions = ENV_KEYS.map((key) => `Enter your ${key}: `);
 
-const envFilePath = path.join(__dirname, ".env");
-const backupFilePath = path.join(__dirname, ".env.backup");
+const envFilePath = path.join(__dirname, "../", ".env");
+const backupFilePath = path.join(__dirname, "../", ".env.backup");
 
 program
   .option("-l, --list", "List the environment variables that need to be set up")
