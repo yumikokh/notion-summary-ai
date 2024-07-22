@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 import readline from "readline";
 import dotenv from "dotenv";
+import { program } from "commander";
 
 dotenv.config();
 
@@ -10,14 +11,27 @@ const rl = readline.createInterface({
   output: process.stdout,
 });
 
-const questions = [
-  "Enter your OPENAI_API_KEY: ",
-  "Enter your NOTION_API_TOKEN: ",
-  "Enter your NOTION_DATABASE_ID: ",
-];
+const ENV_KEYS = ["OPENAI_API_KEY", "NOTION_API_TOKEN", "NOTION_DATABASE_ID"];
+const questions = ENV_KEYS.map((key) => `Enter your ${key}: `);
 
 const envFilePath = path.join(__dirname, ".env");
 const backupFilePath = path.join(__dirname, ".env.backup");
+
+program
+  .option("-l, --list", "List the environment variables that need to be set up")
+  .parse(process.argv);
+
+const options = program.opts();
+if (options.list) {
+  if (fs.existsSync(envFilePath)) {
+    const envData = fs.readFileSync(envFilePath, "utf8");
+    console.log(`Current environment variables:
+${envData}`);
+  } else {
+    console.log(".env file does not exist.");
+  }
+  process.exit(0);
+}
 
 const askQuestions = (questions: string[]) => {
   let index = 0;

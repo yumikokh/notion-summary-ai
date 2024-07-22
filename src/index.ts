@@ -15,9 +15,8 @@ program
   .option(
     "--dry-run",
     "OPENAI APIを実行せずにプロンプトとNotionから取得したコンテンツを表示する"
-  );
-
-program.parse(process.argv);
+  )
+  .parse(process.argv);
 
 const {
   database: databaseId,
