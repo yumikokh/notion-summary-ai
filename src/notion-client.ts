@@ -1,5 +1,5 @@
 import { Client } from "@notionhq/client";
-import { retrievePlainTextByBlock, retrieveProperties } from "./helpers/notion";
+import { parseBlock, parseProperties } from "./helpers/notion";
 import { formatDate } from "./helpers/date";
 
 const notionApi = new Client({
@@ -79,7 +79,7 @@ const fetchPagesContents = async (from: Date, to: Date) => {
       let text: string = "";
 
       if ("properties" in page) {
-        text += retrieveProperties(page.properties).join("\n");
+        text += parseProperties(page.properties).join("\n");
       }
 
       const blocks = await fetchBlocksByPage(page.id);
@@ -88,7 +88,7 @@ const fetchPagesContents = async (from: Date, to: Date) => {
       text += blocks
         .map((block) => {
           if ("type" in block) {
-            return retrievePlainTextByBlock(block);
+            return parseBlock(block);
           }
           return null;
         })

@@ -6,7 +6,10 @@ import {
 
 import { match, P } from "ts-pattern";
 
-export const parseRichText = (
+/**
+ * リッチテキストをプレーンテキストに変換する
+ */
+const parseRichText = (
   richTexts: RichTextItemResponse[],
   option: { prefix?: string; separator?: string } = { separator: " " }
 ) => {
@@ -18,9 +21,10 @@ export const parseRichText = (
   return richTexts.map((text) => text.plain_text).join(option.separator);
 };
 
-export const retrievePlainTextByBlock = (
-  block: BlockObjectResponse
-): string => {
+/**
+ * ブロックをプレーンテキストに変換する
+ */
+const parseBlock = (block: BlockObjectResponse): string => {
   return match(block)
     .with(
       { type: "paragraph", paragraph: { rich_text: P.select() } },
@@ -103,9 +107,10 @@ export const retrievePlainTextByBlock = (
 type Property = PageObjectResponse["properties"][string];
 type WithoutId<T> = T extends { id: string } ? Omit<T, "id"> : T;
 
-const retrievePropertyValue = (
-  property: WithoutId<Property>
-): string | number | null =>
+/**
+ * プロパティをプレーンテキストに変換する
+ */
+const parseProperty = (property: WithoutId<Property>): string | number | null =>
   match(property)
     .with({ type: "title" }, (value) => {
       return parseRichText(value.title);
@@ -151,11 +156,11 @@ const retrievePropertyValue = (
     .with({ type: "rollup" }, (value) => {
       if (value.rollup.type === "array") {
         return value.rollup.array
-          .map((v) => retrievePropertyValue(v))
+          .map((v) => parseProperty(v))
           .filter((v) => v !== null)
           .join(", ");
       }
-      return retrievePropertyValue(value.rollup);
+      return parseProperty(value.rollup);
     })
     .with(
       { type: "files" },
@@ -173,13 +178,18 @@ const retrievePropertyValue = (
     )
     .exhaustive();
 
-export const retrieveProperties = (
+/**
+ * ページプロパティをプレーンテキストに変換する
+ */
+const parseProperties = (
   properties: PageObjectResponse["properties"]
 ): string[] => {
   return Object.entries(properties)
     .map(([key, property]) => {
-      const value = retrievePropertyValue(property);
+      const value = parseProperty(property);
       return value !== null ? `${key}: ${value}` : null;
     })
     .filter((v) => v !== null);
 };
+
+export { parseBlock, parseProperties };
