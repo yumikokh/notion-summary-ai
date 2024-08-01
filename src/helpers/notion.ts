@@ -11,8 +11,9 @@ import { match, P } from "ts-pattern";
  */
 const parseRichText = (
   richTexts: RichTextItemResponse[],
-  option: { prefix?: string; separator?: string } = { separator: " " }
+  _option: { prefix?: string; separator?: string } = { separator: "" }
 ) => {
+  const option = { prefix: "", separator: "", ..._option };
   if (option.prefix) {
     return `${option.prefix} ${richTexts
       .map((text) => text.plain_text)
@@ -184,12 +185,20 @@ const parseProperty = (property: WithoutId<Property>): string | number | null =>
 const parseProperties = (
   properties: PageObjectResponse["properties"]
 ): string[] => {
-  return Object.entries(properties)
-    .map(([key, property]) => {
-      const value = parseProperty(property);
-      return value !== null ? `${key}: ${value}` : null;
-    })
-    .filter((v) => v !== null);
+  return (
+    Object.entries(properties)
+      .map(([key, property]) => {
+        const value = parseProperty(property);
+        return value !== null ? `${key}: ${value}` : null;
+      })
+      .filter((v) => v !== null)
+      // Titleは先頭に持ってくる
+      .sort((a, b) => {
+        if (a?.startsWith("Title")) return -1;
+        if (b?.startsWith("Title")) return 1;
+        return 0;
+      }) as string[]
+  );
 };
 
 export { parseBlock, parseProperties };
