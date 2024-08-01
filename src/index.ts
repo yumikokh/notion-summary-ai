@@ -42,11 +42,10 @@ const main = async () => {
   const to = opts.to ? new Date(opts.to) : endMonth(from);
   const notionContents = await fetchPagesContents(databaseId, from, to);
 
-  const content = `
-  プロンプト: ${promptText}
-  ----------
+  const content = `プロンプト: ${promptText}
+----------
   
-  ${notionContents}`;
+${notionContents}`;
 
   if (opts.dryRun) {
     console.log(content);
@@ -58,7 +57,7 @@ const main = async () => {
   });
 
   const stream = await openai.chat.completions.create({
-    model: "gpt-4",
+    model: "gpt-3.5-turbo",
     messages: [{ role: "user", content }],
     stream: true,
   });
