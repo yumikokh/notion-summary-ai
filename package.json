@@ -1,7 +1,7 @@
 {
   "name": "notion-summary-ai",
-  "version": "1.0.0",
-  "description": "",
+  "version": "0.1.0",
+  "description": "A CLI tool to generate summaries from Notion Database entries using OpenAI",
   "main": "dist/index.js",
   "scripts": {
     "dev": "node -r ts-node/register --env-file=.env",
@@ -12,8 +12,18 @@
     "notion-summary": "bin/notion-summary",
     "setup": "bin/setup"
   },
-  "author": "",
-  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:yumikokh/notion-summary-ai.git"
+  },
+  "keywords": [
+    "notion",
+    "openai",
+    "cli",
+    "typescript"
+  ],
+  "author": "Yumiko Kokubu",
+  "license": "MIT",
   "dependencies": {
     "@notionhq/client": "^2.2.15",
     "commander": "^12.1.0",
